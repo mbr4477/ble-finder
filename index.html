@@ -1,0 +1,75 @@
+<html>
+    <head>
+        <title>GPS Locator</title>
+    </head>
+    <body>
+        <button onclick="doInit()">Find</button>
+        <div id="distance"></div>
+        <script>
+            EARTH_RAD = 6378000.0; // meters
+            DEG2RAD = Math.PI / 180.0;
+            let lastDiscLocation = { lat: 0, lon: 0 };
+            let lastUserLocation = { lat: 0, lon: 0 };
+
+            function distance(lat1, lon1, lat2, lon2) {
+                // adapted from http://www.movable-type.co.uk/scripts/latlong.html
+                let lat1rad = lat1 * DEG2RAD;
+                let lon1rad = lon1 * DEG2RAD;
+                let lat2rad = lat2 * DEG2RAD;
+                let lon2rad = lon2 * DEG2RAD;
+                let dlat = lat2rad - lat1rad;
+                let dlon = lon2rad - lon1rad;
+                let hav = Math.sin(dlat/2)*Math.sin(dlat/2) + 
+                            Math.cos(lat1rad)*Math.cos(lat2rad)*Math.sin(dlon/2)*Math.sin(dlon/2)
+                let c = 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1 - hav));
+                return EARTH_RAD * c;
+            }
+
+            function doInit() {
+                gpsInit();
+                discInit();
+            }
+
+            function gpsInit() {
+                navigator.geolocation.watchPosition(function(pos) {
+                    lastUserLocation.lat = pos.coords.latitude;
+                    lastUserLocation.lon = pos.coords.longitude;
+                    updateStats();
+                });
+            }
+
+            function discInit() {
+                navigator.bluetooth.requestDevice({ 
+                    filters: [
+                        { services: [0x1819] }
+                    ]
+                }).then(device => {
+                    return device.gatt.connect();
+                }).then(server => {
+                    return server.getPrimaryService(0x1819);
+                }).then(service => {
+                    return service.getCharacteristics(0x2A67);
+                }).then(characteristics => {
+                    let locationChar = characteristics[0];
+                    console.log(locationChar);
+                    locationChar.addEventListener('characteristicvaluechanged', function(event) {
+                        let latRaw = event.target.value.getInt32(2, true);
+                        let lonRaw = event.target.value.getInt32(6, true);
+                        lastDiscLocation.lat = latRaw / 1e7;
+                        lastDiscLocation.lon = lonRaw / 1e7;
+                        updateStats();
+                    });
+                    locationChar.startNotifications();
+                });
+            }
+
+            function updateStats() {
+                console.log(lastUserLocation);
+                console.log(lastDiscLocation);
+                let d = distance(lastUserLocation.lat, lastUserLocation.lon, lastDiscLocation.lat, lastDiscLocation.lon);
+                document.getElementById('distance').innerText = Math.round(d) + ' m';
+            }
+
+        </script>
+    </body>
+</html>

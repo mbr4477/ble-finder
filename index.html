@@ -1,15 +1,17 @@
 <html>
     <head>
-        <title>GPS Locator</title>
+        <title>BLE Finder</title>
     </head>
     <body>
         <button onclick="doInit()">Find</button>
         <div id="distance"></div>
         <div id="direction"></div>
+        <div id="ble-location"></div>
+        <div id="user-location"></div>
         <script>
             EARTH_RAD = 6378000.0; // meters
             DEG2RAD = Math.PI / 180.0;
-            let lastDiscLocation = { lat: 0, lon: 0 };
+            let lastBleLocation = { lat: 0, lon: 0 };
             let lastUserLocation = { lat: 0, lon: 0 };
             let lastUserDirection = 0;
 
@@ -25,6 +27,18 @@
                             Math.cos(lat1rad)*Math.cos(lat2rad)*Math.sin(dlon/2)*Math.sin(dlon/2)
                 let c = 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1 - hav));
                 return EARTH_RAD * c;
+            }
+
+            function getBearing(lat1, lon1, lat2, lon2) {
+                // adapted from same source as distance
+                let lat1rad = lat1 * DEG2RAD;
+                let lon1rad = lon1 * DEG2RAD;
+                let lat2rad = lat2 * DEG2RAD;
+                let lon2rad = lon2 * DEG2RAD;
+                let dlat = lat2rad - lat1rad;
+                let dlon = lon2rad - lon1rad;
+                return Math.atan2(Math.sin(dlon) * Math.cos(lat2rad), 
+                        Math.cos(lat1rad) * Math.sin(lat2rad) - Math.sin(lat1rad) * Math.cos(lat2rad) * Math.cos(dlon)) / Math.PI * 180.0;
             }
 
             function doInit() {
@@ -65,8 +79,8 @@
                     locationChar.addEventListener('characteristicvaluechanged', function(event) {
                         let latRaw = event.target.value.getInt32(2, true);
                         let lonRaw = event.target.value.getInt32(6, true);
-                        lastDiscLocation.lat = latRaw / 1e7;
-                        lastDiscLocation.lon = lonRaw / 1e7;
+                        lastBleLocation.lat = latRaw / 1e7;
+                        lastBleLocation.lon = lonRaw / 1e7;
                         updateStats();
                     });
                     locationChar.startNotifications();
@@ -75,9 +89,13 @@
 
             function updateStats() {
                 console.log(lastUserDirection);
-                let d = distance(lastUserLocation.lat, lastUserLocation.lon, lastDiscLocation.lat, lastDiscLocation.lon);
+                let d = distance(lastUserLocation.lat, lastUserLocation.lon, lastBleLocation.lat, lastBleLocation.lon);
                 document.getElementById('distance').innerText = Math.round(d) + ' m';
-                document.getElementById('direction').innerText = Math.round(lastUserDirection) + 'deg';
+                let bearing = getBearing(lastUserLocation.lat, lastUserLocation.lon, lastBleLocation.lat, lastBleLocation.lon);
+                bearing = Math.round(bearing + 360) % 360;
+                document.getElementById('direction').innerText = bearing - lastUserDirection;
+                document.getElementById('user-location').innerText = lastUserLocation.lat + "," + lastUserLocation.lon;
+                document.getElementById('ble-location').innerText = lastBleLocation.lat + "," + lastBleLocation.lon;
             }
 
         </script>

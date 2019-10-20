@@ -5,11 +5,13 @@
     <body>
         <button onclick="doInit()">Find</button>
         <div id="distance"></div>
+        <div id="direction"></div>
         <script>
             EARTH_RAD = 6378000.0; // meters
             DEG2RAD = Math.PI / 180.0;
             let lastDiscLocation = { lat: 0, lon: 0 };
             let lastUserLocation = { lat: 0, lon: 0 };
+            let lastUserDirection = 0;
 
             function distance(lat1, lon1, lat2, lon2) {
                 // adapted from http://www.movable-type.co.uk/scripts/latlong.html
@@ -35,6 +37,12 @@
                     lastUserLocation.lat = pos.coords.latitude;
                     lastUserLocation.lon = pos.coords.longitude;
                     updateStats();
+                });
+            }
+
+            function compassInit() {
+                window.addEventListener('deviceorientation', function(event) {
+                    lastUserDirection = event.alpha;
                 });
             }
 
@@ -64,10 +72,10 @@
             }
 
             function updateStats() {
-                console.log(lastUserLocation);
-                console.log(lastDiscLocation);
+                console.log(lastUserDirection);
                 let d = distance(lastUserLocation.lat, lastUserLocation.lon, lastDiscLocation.lat, lastDiscLocation.lon);
                 document.getElementById('distance').innerText = Math.round(d) + ' m';
+                document.getElementById('direction').innerText = Math.round(lastUserDirection / Math.PI * 180);
             }
 
         </script>

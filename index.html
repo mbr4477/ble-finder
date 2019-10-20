@@ -1,15 +1,56 @@
 <html>
     <head>
         <title>BLE Finder</title>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Montserrat', sans-serif;
+            }
+            #container {
+                display: flex;
+                flex: 1 auto;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+            }
+            #inner {
+            }
+            .hidden {
+                display: none;
+            }
+            button {
+                font-size: 1.5em;
+                border: solid 2px dodgerblue;
+                color: dodgerblue;
+                border-radius: 4px;
+                background: transparent;
+                text-transform: uppercase;
+                padding: 8px 20px;
+            }
+            #distance {
+                text-align: center;
+                font-size: 3em;
+            }
+            #arrow {
+                border: solid black;
+                border-width: 0 10px 10px 0;
+                display: inline-block;
+                padding: 10px;
+                transform: translateY(-150px) rotate(-135deg) ;
+                position: absolute;
+            }
+        </style>
     </head>
     <body>
-        <button onclick="doInit()">Find</button>
-        <div id="distance"></div>
-        <div id="direction"></div>
-        <div id="ble-location"></div>
-        <div id="user-location"></div>
+        <div id="container">
+            <div id="arrow"></div>
+            <div id="inner">
+                <button onclick="onFindClicked()" id="find-button">Find</button>
+                <div id="distance"></div>
+            </div>
+        </div>
         <script>
-            EARTH_RAD = 6378000.0; // meters
+            EARTH_RAD = 6378137.0; // meters
             DEG2RAD = Math.PI / 180.0;
             let lastBleLocation = { lat: 0, lon: 0 };
             let lastUserLocation = { lat: 0, lon: 0 };
@@ -39,6 +80,11 @@
                 let dlon = lon2rad - lon1rad;
                 return Math.atan2(Math.sin(dlon) * Math.cos(lat2rad), 
                         Math.cos(lat1rad) * Math.sin(lat2rad) - Math.sin(lat1rad) * Math.cos(lat2rad) * Math.cos(dlon)) / Math.PI * 180.0;
+            }
+
+            function onFindClicked() {
+                document.getElementById('find-button').classList.add('hidden');
+                doInit();
             }
 
             function doInit() {
@@ -93,9 +139,7 @@
                 document.getElementById('distance').innerText = Math.round(d) + ' m';
                 let bearing = getBearing(lastUserLocation.lat, lastUserLocation.lon, lastBleLocation.lat, lastBleLocation.lon);
                 bearing = Math.round(bearing + 360) % 360;
-                document.getElementById('direction').innerText = bearing - lastUserDirection;
-                document.getElementById('user-location').innerText = lastUserLocation.lat + "," + lastUserLocation.lon;
-                document.getElementById('ble-location').innerText = lastBleLocation.lat + "," + lastBleLocation.lon;
+                document.getElementById('arrow').style.transform = 'rotate(' + ((bearing - lastUserDirection)) + 'deg) translateY(-150px) rotate(-135deg)';
             }
 
         </script>

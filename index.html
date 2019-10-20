@@ -44,6 +44,7 @@
             function compassInit() {
                 window.addEventListener('deviceorientation', function(event) {
                     lastUserDirection = event.alpha;
+                    updateStats();
                 });
             }
 
@@ -76,7 +77,7 @@
                 console.log(lastUserDirection);
                 let d = distance(lastUserLocation.lat, lastUserLocation.lon, lastDiscLocation.lat, lastDiscLocation.lon);
                 document.getElementById('distance').innerText = Math.round(d) + ' m';
-                document.getElementById('direction').innerText = Math.round(lastUserDirection / Math.PI * 180);
+                document.getElementById('direction').innerText = Math.round(lastUserDirection) + 'deg';
             }
 
         </script>

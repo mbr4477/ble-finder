@@ -2,7 +2,7 @@
     <head>
         <title>BLE Finder</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        
+
         <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
         <style>
             body {
@@ -141,7 +141,7 @@
                 document.getElementById('distance').innerText = Math.round(d) + ' m';
                 let bearing = getBearing(lastUserLocation.lat, lastUserLocation.lon, lastBleLocation.lat, lastBleLocation.lon);
                 bearing = Math.round(bearing + 360) % 360;
-                document.getElementById('arrow').style.transform = 'rotate(' + ((bearing - lastUserDirection)) + 'deg) translateY(-150px) rotate(-135deg)';
+                document.getElementById('arrow').style.transform = 'rotate(' + (-(bearing - lastUserDirection)) + 'deg) translateY(-150px) rotate(-135deg)';
             }
 
         </script>

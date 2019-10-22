@@ -141,10 +141,13 @@
             function updateStats() {
                 console.log(lastUserDirection);
                 let d = distance(lastUserLocation.lat, lastUserLocation.lon, lastBleLocation.lat, lastBleLocation.lon);
-                document.getElementById('distance').innerText = Math.round(d) + ' m';
+                if (d < 1000) {
+                    document.getElementById('distance').innerText = Math.round(d) + ' m';
+                } else {
+                    document.getElementById('distance').innerText = 'WAITING FOR FIX'
+                }
                 let bearing = getBearing(lastUserLocation.lat, lastUserLocation.lon, lastBleLocation.lat, lastBleLocation.lon);
                 bearing = Math.round(bearing + 360) % 360;
-                bearing = 28.0
                 document.getElementById('arrow').style.transform = 'rotate(' + (bearing - lastUserDirection) + 'deg) translateY(-150px) rotate(-135deg)';
             }
 

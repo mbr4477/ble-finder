@@ -58,6 +58,9 @@
             let lastUserLocation = { lat: 0, lon: 0 };
             let lastUserDirection = 0;
 
+            console.log(distance(37.960408, -84.515642, 37.960873, -84.515316));
+            console.log(getBearing(37.960408, -84.515642, 37.960873, -84.515316));
+
             function distance(lat1, lon1, lat2, lon2) {
                 // adapted from http://www.movable-type.co.uk/scripts/latlong.html
                 let lat1rad = lat1 * DEG2RAD;
@@ -105,7 +108,7 @@
 
             function compassInit() {
                 window.addEventListener('deviceorientation', function(event) {
-                    lastUserDirection = event.alpha;
+                    lastUserDirection = 360 - event.alpha;
                     updateStats();
                 });
             }
@@ -141,7 +144,8 @@
                 document.getElementById('distance').innerText = Math.round(d) + ' m';
                 let bearing = getBearing(lastUserLocation.lat, lastUserLocation.lon, lastBleLocation.lat, lastBleLocation.lon);
                 bearing = Math.round(bearing + 360) % 360;
-                document.getElementById('arrow').style.transform = 'rotate(' + (-(bearing - lastUserDirection)) + 'deg) translateY(-150px) rotate(-135deg)';
+                bearing = 28.0
+                document.getElementById('arrow').style.transform = 'rotate(' + (bearing - lastUserDirection) + 'deg) translateY(-150px) rotate(-135deg)';
             }
 
         </script>
